@@ -1,0 +1,14 @@
+[
+  {"sku": "AC-101", "name": "Wireless Earbuds", "category": "electronics", "price": 89.0, "stock": 25, "description": "Bluetooth 5.3 earbuds with 24-hour battery case."},
+  {"sku": "AC-102", "name": "USB-C Fast Charger 65W", "category": "electronics", "price": 49.0, "stock": 40, "description": "Charges a laptop and a phone at the same time."},
+  {"sku": "AC-103", "name": "Noise-Cancelling Headphones", "category": "electronics", "price": 249.0, "stock": 8, "description": "Over-ear headphones with active noise cancelling."},
+  {"sku": "AC-104", "name": "Smart Watch", "category": "electronics", "price": 199.0, "stock": 0, "description": "Heart-rate, sleep and step tracking. Currently out of stock."},
+  {"sku": "AC-201", "name": "Running Shoes", "category": "sport", "price": 129.0, "stock": 15, "description": "Lightweight road-running shoes, sizes 6-13."},
+  {"sku": "AC-202", "name": "Yoga Mat", "category": "sport", "price": 39.0, "stock": 30, "description": "6 mm non-slip mat with carry strap."},
+  {"sku": "AC-203", "name": "Insulated Water Bottle 1L", "category": "sport", "price": 29.0, "stock": 50, "description": "Keeps drinks cold for 24 hours."},
+  {"sku": "AC-301", "name": "Coffee Grinder", "category": "kitchen", "price": 79.0, "stock": 12, "description": "Burr grinder with 15 grind settings."},
+  {"sku": "AC-302", "name": "Non-Stick Frying Pan 28cm", "category": "kitchen", "price": 59.0, "stock": 20, "description": "Induction-ready, oven-safe to 200 C."},
+  {"sku": "AC-303", "name": "Glass Food Containers (set of 5)", "category": "kitchen", "price": 35.0, "stock": 18, "description": "Microwave and dishwasher safe."},
+  {"sku": "AC-401", "name": "Laptop Backpack", "category": "bags", "price": 69.0, "stock": 22, "description": "Fits 16-inch laptops; water-resistant."},
+  {"sku": "AC-402", "name": "Carry-On Suitcase", "category": "bags", "price": 159.0, "stock": 6, "description": "Hard-shell, 40 L, spinner wheels."}
+]
