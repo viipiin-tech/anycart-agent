@@ -1,27 +1,10 @@
 """Runs the whole graph offline with a scripted fake model (no AWS needed)."""
 
-from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage
-from langchain_core.outputs import ChatGeneration, ChatResult
 
 from anycart.graph import build_graph, text_of
 from anycart.tools import STORE
-
-
-class ScriptedModel(BaseChatModel):
-    """Returns the next scripted reply on each call."""
-
-    replies: list
-
-    @property
-    def _llm_type(self) -> str:
-        return "scripted"
-
-    def bind_tools(self, tools, **kwargs):
-        return self
-
-    def _generate(self, messages, stop=None, run_manager=None, **kwargs):
-        return ChatResult(generations=[ChatGeneration(message=self.replies.pop(0))])
+from tests.fakes import ScriptedModel
 
 
 def test_agent_searches_then_adds_to_cart():

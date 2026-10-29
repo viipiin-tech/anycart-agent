@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  AnyCart agent API: FastAPI on AWS Lambda behind API Gateway (HTTP API), Claude on
+  Amazon Bedrock, state in one DynamoDB table. Deploy with `sam build && sam deploy --guided`.
+
+Parameters:
+  BedrockModelId:
+    Type: String
+    Description: >
+      The model or inference-profile ID the agent calls (Bedrock console -> Model catalog),
+      e.g. an "au." / "apac." / "us." inference profile for Claude.
+  FoundationModelId:
+    Type: String
+    Description: >
+      The underlying foundation model ID (the BedrockModelId without the "au." / "apac." /
+      "us." prefix). The IAM policy allows only this model.
+  ApiKey:
+    Type: String
+    NoEcho: true
+    Default: ""
+    Description: Shared secret for the x-api-key header. Leave empty only for a private test.
+
+Conditions:
+  HasApiKey: !Not [!Equals [!Ref ApiKey, ""]]
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Architectures: [x86_64]
+    MemorySize: 1024
+    Timeout: 30
+
+Resources:
+  AnyCartTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: pk, AttributeType: S }
+        - { AttributeName: sk, AttributeType: S }
+      KeySchema:
+        - { AttributeName: pk, KeyType: HASH }
+        - { AttributeName: sk, KeyType: RANGE }
+      TimeToLiveSpecification:
+        AttributeName: expires_at
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+
+  AnyCartApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      # Caps cost and abuse: every chat turn is a paid Bedrock call.
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 10
+        ThrottlingRateLimit: 5
+      CorsConfiguration:
+        AllowOrigins: ["*"]
+        AllowMethods: [GET, POST]
+        AllowHeaders: [content-type, x-api-key]
+
+  AnyCartFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: anycart.handler.handler
+      Description: AnyCart FastAPI app (Mangum adapter)
+      Environment:
+        Variables:
+          ANYCART_TABLE: !Ref AnyCartTable
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
+          ANYCART_API_KEY: !If [HasApiKey, !Ref ApiKey, !Ref AWS::NoValue]
+          LOG_LEVEL: INFO
+      LoggingConfig:
+        LogGroup: !Ref AnyCartLogGroup
+      Policies:
+        # Least privilege: CRUD on this one table only, and Bedrock calls to one model.
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AnyCartTable
+        - Statement:
+            - Sid: InvokeOneClaudeModel
+              Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+                - bedrock:InvokeModelWithResponseStream
+              Resource:
+                - !Sub arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/${BedrockModelId}
+                - !Sub arn:aws:bedrock:*::foundation-model/${FoundationModelId}
+      Events:
+        Root:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AnyCartApi
+            Path: /
+            Method: ANY
+        Proxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AnyCartApi
+            Path: /{proxy+}
+            Method: ANY
+
+  AnyCartLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-anycart
+      RetentionInDays: 14
+
+Outputs:
+  ApiUrl:
+    Description: Base URL of the AnyCart API
+    Value: !Sub https://${AnyCartApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/
+  TableName:
+    Value: !Ref AnyCartTable

@@ -13,7 +13,8 @@ from langchain_core.tools import tool
 
 from anycart.store import Store
 
-STORE = Store.load()
+# DynamoDB on Lambda (ANYCART_TABLE set), in memory for the CLI, Streamlit and tests.
+STORE = Store.from_env()
 
 
 def _cart_id(config: RunnableConfig) -> str:
