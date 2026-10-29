@@ -49,7 +49,13 @@ def text_of(message) -> str:
     return content
 
 
-def build_graph(llm: BaseChatModel | None = None, checkpointer=None):
+def build_graph(llm: BaseChatModel | None = None, checkpointer=None, memory: bool = True):
+    """Compile the agent graph.
+
+    memory=True keeps each conversation in a checkpointer (CLI, Streamlit). The API
+    passes memory=False and stores the history itself, because a Lambda's memory is
+    lost between invocations.
+    """
     llm_with_tools = (llm or bedrock_llm()).bind_tools(TOOLS)
 
     def agent(state: MessagesState):
@@ -62,5 +68,7 @@ def build_graph(llm: BaseChatModel | None = None, checkpointer=None):
     graph.add_edge(START, "agent")
     graph.add_conditional_edges("agent", tools_condition)
     graph.add_edge("tools", "agent")
+    if not memory:
+        return graph.compile()
     # The checkpointer keeps each conversation's history, keyed by thread_id.
     return graph.compile(checkpointer=checkpointer or InMemorySaver())

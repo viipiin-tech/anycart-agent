@@ -1,0 +1,10 @@
+# Local development: the app, the Streamlit/CLI front ends and the tests.
+-r src/requirements.txt
+-e .
+uvicorn==0.54.0
+streamlit==1.65.0
+python-dotenv==1.2.4
+pytest==9.1.1
+httpx==0.28.1
+moto[dynamodb]==5.2.5
+cfn-lint==1.59.0

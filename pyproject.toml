@@ -1,0 +1,18 @@
+[project]
+name = "anycart"
+version = "1.0.0"
+description = "AnyCart shopping-assistant agent: LangGraph + Amazon Bedrock, served by FastAPI on AWS Lambda"
+requires-python = ">=3.12"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+anycart = ["data/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
